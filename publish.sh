@@ -59,18 +59,21 @@ if [ "$DRY_RUN" -eq 1 ]; then
   exit 0
 fi
 
-# 3. Rebuild the branch as a single commit and force-push it.
+REMOTE_URL="$(git -C "$REPO_ROOT" remote get-url "$REMOTE")"
+
+# 3. Rebuild the branch as a single commit and force-push it to the remote.
 cd "$WORK"
 git init -q -b "$BRANCH"
 git add -A
 git -c user.name="$AUTHOR_NAME" -c user.email="$AUTHOR_EMAIL" \
     commit -q -m "Publish site from docs/ ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
-git push -q --force "$REPO_ROOT" "HEAD:$BRANCH"
+git push -q --force "$REMOTE_URL" "HEAD:$BRANCH"
+
+OWNER_REPO="$(printf '%s' "$REMOTE_URL" | sed -E 's#.*github\.com[:/]([^/]+/[^/.]+)(\.git)?/?$#\1#')"
+OWNER="$(printf '%s' "$OWNER_REPO" | cut -d/ -f1)"
+REPO_NAME="$(printf '%s' "$OWNER_REPO" | cut -d/ -f2)"
 
 echo "Pushed to $BRANCH. GitHub Actions is deploying now:"
-echo "  https://github.com/$(git -C "$REPO_ROOT" remote get-url "$REMOTE" \
-      | sed -E 's#.*github\.com[:/]([^/]+/[^/.]+)(\.git)?.*#\1#')/actions"
+echo "  https://github.com/$OWNER_REPO/actions"
 echo "Live site (allow ~1 minute):"
-echo "  https://$(git -C "$REPO_ROOT" remote get-url "$REMOTE" \
-      | sed -E 's#.*github\.com[:/]([^/]+)/.*#\1#').github.io/$(git -C "$REPO_ROOT" remote get-url "$REMOTE" \
-      | sed -E 's#.*github\.com[:/][^/]+/([^/.]+)(\.git)?.*#\1#')/"
+echo "  https://$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]').github.io/$REPO_NAME/"
