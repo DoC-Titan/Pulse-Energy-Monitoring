@@ -1,8 +1,11 @@
 name: Deploy to GitHub Pages
 
+# This workflow is installed onto the `gh-pages` branch by publish.sh.
+# The `github-pages` environment only permits deployments from `gh-pages`,
+# so the publishing workflow has to live on that branch.
 on:
   push:
-    branches: ["main"]
+    branches: ["gh-pages"]
   workflow_dispatch:
 
 permissions:
@@ -26,15 +29,17 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          # Creates the Pages site if it does not exist yet and switches it
-          # to GitHub Actions as the build source.
-          enablement: true
+
+      - name: Collect site files
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '_site' ./ _site/
+          ls -la _site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs
+          path: ./_site
 
       - name: Deploy to GitHub Pages
         id: deployment

@@ -22,9 +22,29 @@ python3 -m http.server 8000 --directory docs
 
 Open http://localhost:8000 in desktop Chrome or Edge. No npm packages or build step are required. All website assets are included; no CDN fonts or chart libraries are needed.
 
-## GitHub Pages
+## Live site and GitHub Pages
 
-The downloadable repository uses a `docs/` website folder. Upload its contents to your GitHub repository, keeping the directory structure. In Settings → Pages, choose Deploy from a branch, main, and /docs. GitHub will show the published HTTPS URL. The deployed GPT Site uses the identical website files.
+**Live site:** https://doc-titan.github.io/Pulse-Energy-Monitoring/
+
+`docs/` is the source of truth. It is published to the **`gh-pages`** branch, and
+GitHub Actions deploys that branch to Pages. The `github-pages` environment on
+this repository only permits deployments from `gh-pages`, which is why the site
+is published through a branch rather than straight from `main`.
+
+To publish a change:
+
+```sh
+# 1. edit files in docs/
+./publish.sh            # rebuild gh-pages from docs/ and push
+./publish.sh --dry-run  # preview what would be published
+```
+
+The script copies `docs/` to a fresh `gh-pages` commit (including `.nojekyll`)
+and force-pushes it. Actions then deploys in about a minute. Changes pushed to
+`main` alone do **not** go live until `publish.sh` runs.
+
+The deploy workflow lives at `.github/pages-workflow.yml` in this branch and is
+installed onto `gh-pages` as `.github/workflows/deploy.yml`.
 
 Official guide: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
 
